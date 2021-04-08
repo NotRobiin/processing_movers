@@ -3,6 +3,8 @@ int BACKGROUND_COLOR = 51;
 
 int POINT_NUM = 25;
 int MOVER_NUM = 5;
+
+int POINT_DISTRIBUTION_DISTANCE = 15;
 // SETUP
 
 ArrayList<Mover> movers = new ArrayList<Mover>();
@@ -12,8 +14,8 @@ void setup()
 {
   size(1000, 350);
 
-  make_movers();
-  make_points();
+  for (int i = 0; i < POINT_NUM; i++) points.add(new Point());
+  for (int i = 0; i < MOVER_NUM; i++) movers.add(new Mover());
 }
 
 void draw()
@@ -21,33 +23,70 @@ void draw()
   background(BACKGROUND_COLOR);
   stroke(0, 0, 0);
   strokeWeight(1);
-  
-  for(Mover m : movers)
+
+  for (Mover m : movers)
   {
     m.update(points);
     m.draw();
   }
-  
-  for(Point p : points)
-  {
+
+  for (Point p : points)
     p.draw();
+}
+
+void mousePressed()
+{
+  if (mouseButton == LEFT)
+  {
+    make_point(mouseX, mouseY);
+  } else if (mouseButton == RIGHT)
+  {
+    for (Mover m : movers)
+      m.toggle_frozen();
   }
 }
 
-void make_points()
+void mouseDragged()
 {
-  for(int i = 0; i < POINT_NUM; i++)
+  Point closest = get_closest_point(mouseX, mouseY);
+
+  if (closest == null)
   {
-    Point p = new Point();
-    points.add(p);
+    return;
   }
+
+  float distance = dist(mouseX, mouseY, closest.location.x, closest.location.y);
+
+  if (distance > POINT_DISTRIBUTION_DISTANCE)
+    make_point(mouseX, mouseY);
 }
 
-void make_movers()
+Point get_closest_point(float x, float y)
 {
-  for(int i = 0; i < MOVER_NUM; i++)
+  float distance;
+  float closest_distance = width;
+  Point point = null;
+
+  for (Point p : points)
   {
-    Mover m = new Mover();
-    movers.add(m);
+    distance = dist(x, y, p.location.x, p.location.y);
+
+    if (distance < closest_distance)
+    {
+      closest_distance = distance;
+      point = p;
+    }
   }
+
+  return point;
+}
+
+void make_point(float x, float y)
+{
+  Point p = new Point();
+
+  p.location.x = x;
+  p.location.y = y;
+
+  points.add(p);
 }
